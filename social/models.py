@@ -1,5 +1,4 @@
 from django.db import models
-from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django_resized import ResizedImageField
@@ -21,7 +20,7 @@ class MyUser(TimeAbstract):
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
-        related_name="user",
+        related_name="profile",
         verbose_name="Пользователь",
     )
     change_percentage = models.FloatField(verbose_name="Изменение",default=0)
@@ -37,7 +36,7 @@ class MyUserImage(TimeAbstract):
         verbose_name_plural = "Аватары"
 
     artist = models.OneToOneField(
-        User,
+        'social.MyUser',
         on_delete=models.CASCADE,
         related_name="artist_image",
         verbose_name="Фото пользователя",
@@ -91,11 +90,14 @@ class Post(TimeAbstract):
         verbose_name_plural = 'посты'
         verbose_name = 'пост'
         
-    image = ResizedImageField(upload_to='posts/', quality=90, force_format='WEBP')
+    image = ResizedImageField(upload_to='posts/', quality=90, force_format='WEBP', null=True, blank=True)
     description = models.TextField(verbose_name='описание поста')
     tags = models.ManyToManyField('social.Tag', related_name='post')
     user = models.ForeignKey('social.MyUser', on_delete=models.PROTECT,related_name='post')
     likes = models.PositiveIntegerField(verbose_name='лайки', default=0)
+    
+    def __str__(self):
+        return self.description
        
 
 # Create your models here.
