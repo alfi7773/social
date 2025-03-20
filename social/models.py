@@ -48,6 +48,9 @@ class MyUserImage(TimeAbstract):
 
 class Tag(models.Model):
     name = models.CharField(max_length=100)
+    
+    def __str__(self):
+        return self.name
 
 
 class Comment(TimeAbstract):
@@ -73,7 +76,7 @@ class LikeItem(TimeAbstract):
 
 class Saved(TimeAbstract):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
-    post = models.ManyToManyField('social.Post', through='SavedItem')
+    post = models.ManyToManyField('social.Post', through='SavedItem', related_name='saved_posts')
     
 class SavedItem(TimeAbstract):
     saved = models.ForeignKey('social.Saved', related_name='saved_items', on_delete=models.PROTECT)
@@ -95,6 +98,8 @@ class Post(TimeAbstract):
     tags = models.ManyToManyField('social.Tag', related_name='post')
     user = models.ForeignKey('social.MyUser', on_delete=models.PROTECT,related_name='post')
     likes = models.PositiveIntegerField(verbose_name='лайки', default=0)
+    saved = models.PositiveIntegerField(verbose_name='сохраненные', default=0)
+    
     
     def __str__(self):
         return self.description
