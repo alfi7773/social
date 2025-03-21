@@ -23,20 +23,22 @@ class CommentSerializer(serializers.ModelSerializer):
         
 class LikeSerializer(serializers.ModelSerializer):
     
-    # user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all()) 
-    
+    user = serializers.SerializerMethodField()
     
     class Meta:
         model = Like
-        exclude = ['user',]
+        fields = ['user', 'post']
         
+        
+    def get_user(self, obj):
+        return obj.user.id
         
 class SavedItemSerializer(serializers.ModelSerializer):
     post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
     
     class Meta:
         model = SavedItem
-        fields = ['post', 'quantity']
+        fields = ['post']
 
 
 class SavedSerializer(serializers.ModelSerializer):
@@ -58,7 +60,7 @@ class PostSerializer(serializers.ModelSerializer):
     
     tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True)
     # comment = CommentSerializer(many=True)
-    likes = LikeSerializer(many=False, read_only=True)
+    likes = serializers.IntegerField(read_only=True)
     image = serializers.ImageField(required=False, allow_null=True)
     saved_items = SavedItemSerializer(many=True, read_only=True)
     
