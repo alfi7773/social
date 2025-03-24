@@ -6,11 +6,18 @@ from rest_framework.views import APIView
 from api import models
 from social.models import Post, LikeItem
 from django.contrib.auth.models import User
+from rest_framework.generics import CreateAPIView
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from django.contrib.auth import get_user_model
+from rest_framework.permissions import AllowAny
+
 
 # Create your views here.
 from rest_framework import viewsets
 from social.models import Post, Comment, Like, Saved, Tag
-from .serializers import PostSerializer, CommentSerializer, LikeSerializer, SavedSerializer, TagSerializer
+from .serializers import PostSerializer, CommentSerializer, LikeSerializer, RegisterSerializer, SavedSerializer, TagSerializer
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
@@ -45,3 +52,17 @@ class SavedViewSet(viewsets.ModelViewSet):
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+    
+class RegisterView(generics.CreateAPIView):
+    queryset = get_user_model()
+    permission_classes = [AllowAny]
+    serializer_class = RegisterSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response(
+            {"message": "Пользователь создан"}, 
+            status=status.HTTP_201_CREATED
+        )
