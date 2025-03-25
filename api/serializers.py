@@ -1,30 +1,67 @@
 from social.models import *
 from rest_framework import serializers
-# from rest_framework_simplejwt.serializers import TokenObtainPairSerializer # type: ignore
+from django.contrib.auth.models import User
+from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from social.models import *
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 
-# class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-#     @classmethod
-#     def get_token(cls, user):
-#         token = super().get_token(user)
-#         token['username'] = user.username
-#         return token
+class LoginSerializer(serializers.Serializer):
 
-class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+    username = serializers.CharField()
+    password = serializers.CharField()
+
+
+class ReadUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'password', 'email']
+        fields = (
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'email',
+        )
+
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['username'] = user.username
+        return token
+
+class RegisterSerializer(serializers.ModelSerializer):
+    # password = serializers.CharField(write_only=True)
+    # username = serializers.CharField(required=False)  
+
+    class Meta:
+        model = MyUser
+        fields = ['email', 'password', 'username']  
 
     def create(self, validated_data):
         user = User.objects.create_user(
-            username=validated_data['username'],
-            email=validated_data.get('email', ''),
-            password=validated_data['password']
+            email=validated_data['email'],
+            password=validated_data['password'],
+            username=validated_data['username']
         )
-        return user
+
+        my_user = MyUser.objects.create(user=user, email=validated_data['email'])
+        return my_user
+    # def create(self, validated_data):
+    #     user = MyUser.objects.create_user(
+    #         username=validated_data['username'],
+    #         email=validated_data.get('email', ''),
+    #         password=validated_data['password']
+    #     )
+    
+
 
 class TagSerializer(serializers.ModelSerializer):
     

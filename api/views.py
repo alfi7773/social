@@ -18,6 +18,35 @@ from rest_framework.permissions import AllowAny
 from rest_framework import viewsets
 from social.models import Post, Comment, Like, Saved, Tag
 from .serializers import PostSerializer, CommentSerializer, LikeSerializer, RegisterSerializer, SavedSerializer, TagSerializer
+from django.contrib.auth import authenticate
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.authtoken.models import Token
+from .serializers import LoginSerializer, ReadUserSerializer
+
+
+class LoginApiView(APIView):
+    
+
+    def post(self, request, *args, **kwargs):
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        username, password = serializer.validated_data.get('username'), serializer.validated_data.get('password')
+        user = authenticate(username=username, password=password)
+
+        if user:
+            token, created = Token.objects.get_or_create(user=user)
+            read_serializer = ReadUserSerializer(user, context={'request': request})
+
+            data = {
+                **read_serializer.data,
+                'token': token.key
+            }
+
+            return Response(data)
+
+        return Response({'detail': 'Пользователь не найден или не правильный пароль.'}, status.HTTP_400_BAD_REQUEST)
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
@@ -42,7 +71,6 @@ class LikePostView(APIView):
         post.likes += 1
         post.save()
         return Response({"status": "liked"})
-    
 
 
 class SavedViewSet(viewsets.ModelViewSet):

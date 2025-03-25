@@ -1,7 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.db import models
 from django.utils import timezone
 from django_resized import ResizedImageField
+from .manages import MyUserManager
+from django.conf import settings
+
 
 class TimeAbstract(models.Model):
     
@@ -12,23 +17,42 @@ class TimeAbstract(models.Model):
         abstract = True
         
 
-class MyUser(TimeAbstract):
+class MyUser(AbstractBaseUser, PermissionsMixin, TimeAbstract):
     class Meta:
         verbose_name = "пользователь"
         verbose_name_plural = "пользователи"
 
     user = models.OneToOneField(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="profile",
         verbose_name="Пользователь",
+        null=True, blank=True
     )
-    change_percentage = models.FloatField(verbose_name="Изменение",default=0)
+    username = models.CharField(max_length=150, unique=True)
+    email = models.EmailField('электронная почта', unique=True)
+    change_percentage = models.FloatField(verbose_name="Изменение", default=0)
 
+    # is_active = models.BooleanField(default=True)
+    # is_staff = models.BooleanField(default=False)
+    # is_superuser = models.BooleanField(default=False)
+
+    objects = MyUserManager()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []  
 
     def __str__(self):
         return self.user.username
-    
+
+    @property
+    def is_anonymous(self):
+        return False
+
+    @property
+    def is_authenticated(self):
+        return True
+
     
 class MyUserImage(TimeAbstract):
     class Meta:
@@ -55,7 +79,7 @@ class Tag(models.Model):
 
 class Comment(TimeAbstract):
     post = models.ForeignKey('social.Post', related_name="comments", on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     content = models.TextField()
     parent = models.ForeignKey('self', null=True, blank=True, related_name='replies', on_delete=models.CASCADE)
 
@@ -64,7 +88,7 @@ class Comment(TimeAbstract):
 
 
 class Like(TimeAbstract):
-    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     post = models.ManyToManyField('social.Post', through='LikeItem')
     
 class LikeItem(TimeAbstract):
@@ -75,7 +99,7 @@ class LikeItem(TimeAbstract):
 
 
 class Saved(TimeAbstract):
-    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     post = models.ManyToManyField('social.Post', through='SavedItem', related_name='saved_posts')
     
 class SavedItem(TimeAbstract):
@@ -96,7 +120,7 @@ class Post(TimeAbstract):
     image = ResizedImageField(upload_to='posts/', quality=90, force_format='WEBP', null=True, blank=True)
     description = models.TextField(verbose_name='описание поста')
     tags = models.ManyToManyField('social.Tag', related_name='post')
-    user = models.ForeignKey('social.MyUser', on_delete=models.PROTECT,related_name='post')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,related_name='post')
     likes = models.PositiveIntegerField(verbose_name='лайки', default=0)
     saved = models.PositiveIntegerField(verbose_name='сохраненные', default=0)
     

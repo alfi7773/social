@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     
     'drf_yasg',
+    'rest_framework_simplejwt',
+    'rest_framework.authtoken',
     
     'social',
     'rest_framework',
@@ -115,6 +117,9 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
+
+
+AUTH_USER_MODEL = 'social.MyUser'
 
 
 # Static files (CSS, JavaScript, Images)

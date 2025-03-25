@@ -12,6 +12,7 @@ router.register('tags', views.TagViewSet)
 
 urlpatterns = [
     path('register/', views.RegisterView.as_view(), name='register'),
+    path('login/', views.LoginApiView.as_view(), name='login'),
     path('likes/', views.LikePostView.as_view(), name='like_post'),
     path('', include(router.urls)),  
 ]
