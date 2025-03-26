@@ -22,28 +22,28 @@ class MyUser(AbstractBaseUser, PermissionsMixin, TimeAbstract):
         verbose_name = "пользователь"
         verbose_name_plural = "пользователи"
 
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="profile",
-        verbose_name="Пользователь",
-        null=True, blank=True
-    )
+    # user = models.OneToOneField(
+    #     settings.AUTH_USER_MODEL,
+    #     on_delete=models.CASCADE,
+    #     related_name="profile",
+    #     verbose_name="Пользователь",
+    #     null=True, blank=True
+    # )
     username = models.CharField(max_length=150, unique=True)
-    email = models.EmailField('электронная почта', unique=True)
+    email = models.EmailField('электронная почта', unique=False)
     change_percentage = models.FloatField(verbose_name="Изменение", default=0)
 
-    # is_active = models.BooleanField(default=True)
-    # is_staff = models.BooleanField(default=False)
-    # is_superuser = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
 
     objects = MyUserManager()
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = []  
 
     def __str__(self):
-        return self.user.username
+        return self.email
 
     @property
     def is_anonymous(self):
@@ -52,6 +52,11 @@ class MyUser(AbstractBaseUser, PermissionsMixin, TimeAbstract):
     @property
     def is_authenticated(self):
         return True
+    
+    def get_avatar(self):
+        if hasattr(self, 'artist_image') and self.artist_image.image:
+            return self.artist_image.image.url
+        return None
 
     
 class MyUserImage(TimeAbstract):
@@ -69,6 +74,9 @@ class MyUserImage(TimeAbstract):
 
     def __str__(self):
         return f"Image of {self.artist.username}"
+    
+    
+
 
 class Tag(models.Model):
     name = models.CharField(max_length=100)

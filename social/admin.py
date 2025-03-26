@@ -1,9 +1,27 @@
 from django.contrib import admin
 from social.models import *
+from django.utils.safestring import mark_safe
 
-admin.site.register(MyUser)
-admin.site.register(Post)
+
+from django.utils.html import format_html
+from .models import MyUser, MyUserImage
+
+class MyUserAdmin(admin.ModelAdmin):
+    list_display = ('username', 'email', 'avatar_display')
+
+    def avatar_display(self, obj):
+        avatar_url = obj.get_avatar()
+        if avatar_url:
+            return mark_safe(f'<img src="{avatar_url}" width="50" style="border-radius:50%;" />')
+        return "Нет фото"   
+
+    avatar_display.short_description = "Аватар"
+
+admin.site.register(MyUser, MyUserAdmin)
 admin.site.register(MyUserImage)
+
+
+admin.site.register(Post)
 admin.site.register(Comment)
 admin.site.register(Like)
 admin.site.register(Saved)
