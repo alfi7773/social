@@ -10,10 +10,7 @@ User = get_user_model()
 
 
 
-class LoginSerializer(serializers.Serializer):
 
-    username = serializers.CharField()
-    password = serializers.CharField()
 
 
 class ReadUserSerializer(serializers.ModelSerializer):
@@ -55,14 +52,20 @@ class RegisterSerializer(serializers.ModelSerializer):
         my_user = MyUser.objects.create(email=validated_data['email'])
 
         return my_user
-    # def create(self, validated_data):
-    #     user = MyUser.objects.create_user(
-    #         username=validated_data['username'],
-    #         email=validated_data.get('email', ''),
-    #         password=validated_data['password']
-    #     )
+    
+class LoginSerializer(serializers.Serializer):
+
+    username = serializers.CharField()
+    password = serializers.CharField()
+
     
 
+
+class ImageUserSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = MyUserImage
+        fields = '__all__'
 
 class TagSerializer(serializers.ModelSerializer):
     
