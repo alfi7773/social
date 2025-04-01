@@ -36,7 +36,7 @@ class LoginApiView(APIView):
         user = authenticate(email=email, password=password)
 
         if user:
-            token, created = Token.objects.get_or_create(user=user)
+            token, createds = Token.objects.get_or_create(user=user)
             read_serializer = ReadUserSerializer(user, context={'request': request})
 
             data = {
