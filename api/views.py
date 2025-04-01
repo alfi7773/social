@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from api import models
-from social.models import MyUserImage, Post, LikeItem
+from social.models import MyUser, MyUserImage, Post, LikeItem
 from django.contrib.auth.models import User
 from rest_framework.generics import CreateAPIView
 from rest_framework import generics
@@ -32,8 +32,8 @@ class LoginApiView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        username, password = serializer.validated_data.get('username'), serializer.validated_data.get('password')
-        user = authenticate(username=username, password=password)
+        email, password = serializer.validated_data.get('email'), serializer.validated_data.get('password')
+        user = authenticate(email=email, password=password)
 
         if user:
             token, created = Token.objects.get_or_create(user=user)
@@ -86,7 +86,7 @@ class TagViewSet(viewsets.ModelViewSet):
     serializer_class = TagSerializer
     
 class RegisterView(generics.CreateAPIView):
-    queryset = get_user_model()
+    queryset = MyUser.objects.all()
     permission_classes = [AllowAny]
     serializer_class = RegisterSerializer
 
