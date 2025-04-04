@@ -29,10 +29,7 @@ class MyUser(AbstractBaseUser, PermissionsMixin, TimeAbstract):
     #     verbose_name="Пользователь",
     #     null=True, blank=True
     # )
-<<<<<<< HEAD
-=======
-    
->>>>>>> 332435967397b1a36fb5251a371e42c4fd2f4a6e
+
     avatar = ResizedImageField('аватарка', size=[500, 500], crop=['middle', 'center'],
                                upload_to='avatars/', force_format='WEBP', quality=90,
                                null=True, blank=True)
