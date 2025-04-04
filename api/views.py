@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from api import models
-from social.models import MyUserImage, Post, LikeItem
+from social.models import MyUser, MyUserImage, Post, LikeItem
 from django.contrib.auth.models import User
 from rest_framework.generics import CreateAPIView
 from rest_framework import generics
@@ -17,7 +17,7 @@ from rest_framework.permissions import AllowAny
 # Create your views here.
 from rest_framework import viewsets
 from social.models import Post, Comment, Like, Saved, Tag
-from .serializers import PostSerializer, CommentSerializer, LikeSerializer, RegisterSerializer, SavedSerializer, TagSerializer
+from .serializers import MyUserSerializer, PostSerializer, CommentSerializer, LikeSerializer, RegisterSerializer, SavedSerializer, TagSerializer
 from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.response import Response
@@ -25,6 +25,11 @@ from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from .serializers import LoginSerializer, ReadUserSerializer, ImageUserSerializer
 
+
+class AllUser(viewsets.ModelViewSet):
+    
+    queryset = MyUser.objects.all()
+    serializer_class = MyUserSerializer
 
 class LoginApiView(APIView):
     

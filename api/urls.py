@@ -12,12 +12,15 @@ router.register('comments', views.CommentViewSet)
 router.register('saved', views.SavedViewSet)
 router.register('tags', views.TagViewSet)
 router.register('image-user', views.UserImage)
+router.register('users', views.AllUser)
 
 urlpatterns = [
     path('register/', views.RegisterView.as_view(), name='register'),
     path('login/', views.LoginApiView.as_view(), name='login'),
     path('likes/', views.LikePostView.as_view(), name='like_post'),
+    # path('users/', views.AllUser.as_view()),
     path('', include(router.urls)),  
+    
 ]
 
 urlpatterns += url_doc

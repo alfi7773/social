@@ -29,8 +29,11 @@ class MyUser(AbstractBaseUser, PermissionsMixin, TimeAbstract):
     #     verbose_name="Пользователь",
     #     null=True, blank=True
     # )
-    username = models.CharField(max_length=150, unique=True)
-    email = models.EmailField('электронная почта', unique=False)
+    avatar = ResizedImageField('аватарка', size=[500, 500], crop=['middle', 'center'],
+                               upload_to='avatars/', force_format='WEBP', quality=90,
+                               null=True, blank=True)
+    username = None
+    email = models.EmailField('электронная почта', unique=True)
     change_percentage = models.FloatField(verbose_name="Изменение", default=0)
 
     is_active = models.BooleanField(default=True)
@@ -39,7 +42,7 @@ class MyUser(AbstractBaseUser, PermissionsMixin, TimeAbstract):
 
     objects = MyUserManager()
 
-    USERNAME_FIELD = 'username'
+    USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []  
 
     def __str__(self):
