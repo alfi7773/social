@@ -19,7 +19,6 @@ urlpatterns = [
     path('likes/', views.LikePostView.as_view(), name='like_post'),
     # path('users/', views.AllUser.as_view()),
     path('', include(router.urls)),  
-    
 ]
 
 urlpatterns += url_doc

@@ -6,6 +6,10 @@ from django.utils.safestring import mark_safe
 from django.utils.html import format_html
 from .models import MyUser, MyUserImage
 
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+    readonly_fields = ['likes', 'saved']
+
 class MyUserAdmin(admin.ModelAdmin):
     list_display = ('username', 'email', 'avatar_display')
 
@@ -21,7 +25,6 @@ admin.site.register(MyUser, MyUserAdmin)
 admin.site.register(MyUserImage)
 
 
-admin.site.register(Post)
 admin.site.register(Comment)
 admin.site.register(Like)
 admin.site.register(Saved)
