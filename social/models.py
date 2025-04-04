@@ -128,13 +128,12 @@ class Post(TimeAbstract):
         verbose_name_plural = 'посты'
         verbose_name = 'пост'
         
-    image = ResizedImageField(upload_to='posts/', quality=90, force_format='WEBP', null=True, blank=True)
-    description = models.TextField(verbose_name='описание поста')
-    tags = models.ManyToManyField('social.Tag', related_name='post')
+    file = models.FileField(upload_to='posts/')
+    description = models.TextField(verbose_name='описание поста', blank=True, null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,related_name='post')
-    likes = models.PositiveIntegerField(verbose_name='лайки', default=0)
-    saved = models.PositiveIntegerField(verbose_name='сохраненные', default=0)
-    
+    likes = models.PositiveIntegerField(verbose_name='лайки', default=0, blank=True, null=True)
+    saved = models.PositiveIntegerField(verbose_name='сохраненные', default=0, blank=True, null=True)
+    tag = models.CharField(max_length=900)
     
     def __str__(self):
         return self.description

@@ -67,12 +67,7 @@ class ImageUserSerializer(serializers.ModelSerializer):
         model = MyUserImage
         fields = '__all__'
 
-class TagSerializer(serializers.ModelSerializer):
-    
-    
-    class Meta:
-        model = Tag
-        fields = '__all__'
+
 
         
 class CommentSerializer(serializers.ModelSerializer):
@@ -124,15 +119,12 @@ class SavedSerializer(serializers.ModelSerializer):
         
 class PostSerializer(serializers.ModelSerializer):
     
-    tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True)
     # comment = CommentSerializer(many=True)
     likes = serializers.IntegerField(read_only=True)
-    image = serializers.ImageField(required=False, allow_null=True)
-    saved_items = SavedItemSerializer(many=True, read_only=True)
     
     class Meta:
         model = Post
-        fields = '__all__'
+        exclude = ('saved',)
         
         
 class MyUserSerializer(serializers.ModelSerializer):

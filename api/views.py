@@ -16,8 +16,8 @@ from rest_framework.permissions import AllowAny
 
 # Create your views here.
 from rest_framework import viewsets
-from social.models import Post, Comment, Like, Saved, Tag
-from .serializers import MyUserSerializer, PostSerializer, CommentSerializer, LikeSerializer, RegisterSerializer, SavedSerializer, TagSerializer
+from social.models import Post, Comment, Saved
+from .serializers import MyUserSerializer, PostSerializer, CommentSerializer, RegisterSerializer, SavedSerializer
 from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.response import Response
@@ -86,9 +86,7 @@ class SavedViewSet(viewsets.ModelViewSet):
     queryset = Saved.objects.all()
     serializer_class = SavedSerializer
 
-class TagViewSet(viewsets.ModelViewSet):
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
+
     
 class RegisterView(generics.CreateAPIView):
     queryset = get_user_model()

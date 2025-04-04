@@ -10,7 +10,6 @@ router.register('posts', views.PostViewSet)
 router.register('comments', views.CommentViewSet)
 # router.register('likes', views.LikePostView)
 router.register('saved', views.SavedViewSet)
-router.register('tags', views.TagViewSet)
 router.register('image-user', views.UserImage)
 router.register('users', views.AllUser)
 
