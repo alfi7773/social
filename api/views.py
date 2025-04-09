@@ -33,7 +33,6 @@ class AllUser(viewsets.ModelViewSet):
 
 class LoginApiView(APIView):
     
-    
 
     def post(self, request, *args, **kwargs):
         serializer = LoginSerializer(data=request.data)
@@ -42,7 +41,7 @@ class LoginApiView(APIView):
         user = authenticate(email=email, password=password)
 
         if user:
-            token, createds = Token.objects.get_or_create(user=user)
+            token, created = Token.objects.get_or_create(user=user)
             read_serializer = ReadUserSerializer(user, context={'request': request})
 
             data = {
@@ -52,18 +51,13 @@ class LoginApiView(APIView):
 
             return Response(data)
 
-        return Response({'detail': 'Пользователь не найден или не правильный пароль.'}, status.HTTP_400_BAD_REQUEST)
+        return Response({'detail': 'Пользователь не найден или не правильный пароль.'}, read_serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
 class PostViewSet(viewsets.ModelViewSet):
-    authentication_classes = [TokenAuthentication]
-    
-    
     queryset = Post.objects.all()
     serializer_class = PostSerializer
 
 class CommentViewSet(viewsets.ModelViewSet):
-    authentication_classes = [TokenAuthentication]
-    
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
@@ -74,13 +68,9 @@ class UserImage(viewsets.ModelViewSet):
 
 class LikePostView(APIView):
     
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-    
     def post(self, request, *args, **kwargs):
-        user = request.user
+        user = request.data.get('user')
         post_id = request.data.get('post')
-        avatar = request.data.get('avatar')
         
         try:
             post = Post.objects.get(id=post_id)
@@ -89,12 +79,10 @@ class LikePostView(APIView):
         
         post.likes += 1
         post.save()
-        return Response({"status": "liked"}, avatar)
+        return Response({"status": "liked"})
 
 
 class SavedViewSet(viewsets.ModelViewSet):
-    authentication_classes = [TokenAuthentication]
-    
     queryset = Saved.objects.all()
     serializer_class = SavedSerializer
 
@@ -109,7 +97,13 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        return Response(
-            {"message": "Пользователь создан"}, 
+
+        # token, created = Token.objects.get_or_create(user=user)
+        print(user)
+        return Response (
+            {"message": "Пользователь создан",  
+            # "token": token.key,
+            "user": user,
+            },
             status=status.HTTP_201_CREATED
         )
