@@ -16,14 +16,8 @@ User = get_user_model()
 class ReadUserSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = User
-        fields = (
-            # 'id',
-            'username',
-            # 'first_name',
-            # 'last_name',
-            'email',
-        )
+        model = MyUser
+        fields = ['avatar', 'username', 'email', 'first_name', 'last_name']
 
 
 
@@ -40,17 +34,19 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MyUser
-        fields = ['email', 'password']  
+        fields = ['avatar','username', 'email', 'first_name', 'last_name', 'password'] 
 
     def create(self, validated_data):
         user = MyUser.objects.create_user(
+            avatar=validated_data['avatar'],
+            username=validated_data['username'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
             email=validated_data['email'],
             password=validated_data['password'],
-            # username=validated_data['username']
         )
-
-
-        return user
+        print(user)
+        return ReadUserSerializer(user).data
     
 class LoginSerializer(serializers.Serializer):
 
@@ -77,7 +73,7 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_replies(self, obj):
-        replies = obj.replies.filter()
+        replies = obj.replies.all() 
         return CommentSerializer(replies, many=True).data
 
         
@@ -115,19 +111,48 @@ class SavedSerializer(serializers.ModelSerializer):
         for item_data in saved_items_data:
             SavedItem.objects.create(saved=saved_instance, **item_data)
         return saved_instance
-        
-class PostSerializer(serializers.ModelSerializer):
     
-    # comment = CommentSerializer(many=True)
-    likes = serializers.IntegerField(read_only=True)
-    
-    class Meta:
-        model = Post
-        exclude = ('saved',)
-        
-        
-class MyUserSerializer(serializers.ModelSerializer):
+class UsernameSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = MyUser
-        fields = '__all__'
+        fields = ['username',]
+
+class UserWithAreaSerializer(serializers.Serializer):
+
+
+    user_posts = serializers.CharField()
+    favorite_posts = serializers.CharField()
+    saved_posts = serializers.CharField()
+
+        
+class PostSerializer(serializers.ModelSerializer):
+    likes = serializers.IntegerField(read_only=True)
+    user = UsernameSerializer(read_only=True)
+    comments = CommentSerializer(many=True)
+    # replies = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Post
+        exclude = ('saved', )
+
+    # def get_replies(self, obj):
+    #     comments = obj.comments.all()
+    #     replies = Comment.objects.filter(parent__in=comments)
+    #     return CommentSerializer(replies, many=True).data
+
+    
+class MyUserSerializer(serializers.ModelSerializer):
+
+    mass = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = MyUser
+        fields = ['avatar','username', 'email', 'first_name', 'last_name', 'password', 'mass']
+
+    def get_mass(self, obj):
+        return UserWithAreaSerializer({
+            "user_posts": [],
+            "favorite_posts": [],
+            "saved_posts": []
+        }).data

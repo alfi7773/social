@@ -33,8 +33,10 @@ class MyUser(AbstractBaseUser, PermissionsMixin, TimeAbstract):
     avatar = ResizedImageField('аватарка', size=[500, 500], crop=['middle', 'center'],
                                upload_to='avatars/', force_format='WEBP', quality=90,
                                null=True, blank=True)
-    username = models.CharField(max_length=20)
+    username = models.CharField(max_length=40, blank=True, null=True)
     email = models.EmailField('электронная почта', unique=True)
+    first_name = models.CharField(max_length=20, blank=True, null=True)
+    last_name = models.CharField(max_length=20, blank=True, null=True)
     change_percentage = models.FloatField(verbose_name="Изменение", default=0)
 
     is_active = models.BooleanField(default=True)
@@ -43,8 +45,8 @@ class MyUser(AbstractBaseUser, PermissionsMixin, TimeAbstract):
 
     objects = MyUserManager()
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []  
+    USERNAME_FIELD =  'email'
+    REQUIRED_FIELDS = ['username',]  
 
     def __str__(self):
         return self.email
@@ -129,15 +131,16 @@ class Post(TimeAbstract):
         verbose_name_plural = 'посты'
         verbose_name = 'пост'
         
-    file = models.FileField(upload_to='posts/')
+    file = models.FileField(upload_to='posts/', blank=True, null=True)
     description = models.TextField(verbose_name='описание поста', blank=True, null=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,related_name='post')
+    user = models.ForeignKey('social.MyUser', on_delete=models.PROTECT,related_name='post')
     likes = models.PositiveIntegerField(verbose_name='лайки', default=0, blank=True, null=True)
     saved = models.PositiveIntegerField(verbose_name='сохраненные', default=0, blank=True, null=True)
-    tag = models.CharField(max_length=900)
+    tags = models.CharField(max_length=900, blank=True, null=True)
     
     def __str__(self):
         return self.description
        
 
 # Create your models here.
+ 

@@ -41,7 +41,7 @@ class LoginApiView(APIView):
         user = authenticate(email=email, password=password)
 
         if user:
-            token, createds = Token.objects.get_or_create(user=user)
+            token, created = Token.objects.get_or_create(user=user)
             read_serializer = ReadUserSerializer(user, context={'request': request})
 
             data = {
@@ -51,7 +51,7 @@ class LoginApiView(APIView):
 
             return Response(data)
 
-        return Response({'detail': 'Пользователь не найден или не правильный пароль.'}, status.HTTP_400_BAD_REQUEST)
+        return Response({'detail': 'Пользователь не найден или не правильный пароль.'}, read_serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
@@ -97,7 +97,13 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        return Response(
-            {"message": "Пользователь создан"}, 
+
+        # token, created = Token.objects.get_or_create(user=user)
+        print(user)
+        return Response (
+            {"message": "Пользователь создан",  
+            # "token": token.key,
+            "user": user,
+            },
             status=status.HTTP_201_CREATED
         )

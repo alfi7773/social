@@ -11,7 +11,7 @@ class PostAdmin(admin.ModelAdmin):
     readonly_fields = ['likes', 'saved']
 
 class MyUserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'avatar_display')
+    list_display = ( 'email', 'avatar_display')
 
     def avatar_display(self, obj):
         avatar_url = obj.get_avatar()
