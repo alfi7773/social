@@ -134,7 +134,7 @@ class Post(TimeAbstract):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,related_name='post')
     likes = models.PositiveIntegerField(verbose_name='лайки', default=0, blank=True, null=True)
     saved = models.PositiveIntegerField(verbose_name='сохраненные', default=0, blank=True, null=True)
-    tag = models.CharField(max_length=900)
+    tags = models.CharField(max_length=900)
     
     def __str__(self):
         return self.description

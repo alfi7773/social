@@ -16,14 +16,8 @@ User = get_user_model()
 class ReadUserSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = User
-        fields = (
-            # 'id',
-            'username',
-            # 'first_name',
-            # 'last_name',
-            'email',
-        )
+        model = MyUser
+        fields = ['email', 'password', 'username', 'first_name', 'last_name', 'avatar']
 
 
 
@@ -40,13 +34,16 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MyUser
-        fields = ['email', 'password']  
+        fields = ['email', 'password', 'username', 'first_name', 'last_name', 'avatar']  
 
     def create(self, validated_data):
         user = MyUser.objects.create_user(
+            avatar=validated_data['avatar'],
+            useranme=validated_data['useranme'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
             email=validated_data['email'],
             password=validated_data['password'],
-            # username=validated_data['username']
         )
 
 
@@ -101,6 +98,7 @@ class SavedItemSerializer(serializers.ModelSerializer):
         fields = ['post']
 
 
+
 class SavedSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     saved_items = SavedItemSerializer(many=True)
@@ -120,10 +118,14 @@ class PostSerializer(serializers.ModelSerializer):
     
     # comment = CommentSerializer(many=True)
     likes = serializers.IntegerField(read_only=True)
+    avatar = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = Post
         exclude = ('saved',)
+        
+    def get_avatar(self, obj):
+        return obj.user.avatar.url if obj.user.avatar else None
         
         
 class MyUserSerializer(serializers.ModelSerializer):

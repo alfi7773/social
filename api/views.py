@@ -71,6 +71,7 @@ class LikePostView(APIView):
     def post(self, request, *args, **kwargs):
         user = request.data.get('user')
         post_id = request.data.get('post')
+        avatar = request.data.get('avatar')
         
         try:
             post = Post.objects.get(id=post_id)
@@ -79,7 +80,7 @@ class LikePostView(APIView):
         
         post.likes += 1
         post.save()
-        return Response({"status": "liked"})
+        return Response({"status": "liked"}, avatar)
 
 
 class SavedViewSet(viewsets.ModelViewSet):
