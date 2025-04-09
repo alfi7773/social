@@ -33,6 +33,7 @@ class AllUser(viewsets.ModelViewSet):
 
 class LoginApiView(APIView):
     
+    
 
     def post(self, request, *args, **kwargs):
         serializer = LoginSerializer(data=request.data)
@@ -54,10 +55,15 @@ class LoginApiView(APIView):
         return Response({'detail': 'Пользователь не найден или не правильный пароль.'}, status.HTTP_400_BAD_REQUEST)
 
 class PostViewSet(viewsets.ModelViewSet):
+    authentication_classes = [TokenAuthentication]
+    
+    
     queryset = Post.objects.all()
     serializer_class = PostSerializer
 
 class CommentViewSet(viewsets.ModelViewSet):
+    authentication_classes = [TokenAuthentication]
+    
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
@@ -68,8 +74,11 @@ class UserImage(viewsets.ModelViewSet):
 
 class LikePostView(APIView):
     
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    
     def post(self, request, *args, **kwargs):
-        user = request.data.get('user')
+        user = request.user
         post_id = request.data.get('post')
         avatar = request.data.get('avatar')
         
@@ -84,6 +93,8 @@ class LikePostView(APIView):
 
 
 class SavedViewSet(viewsets.ModelViewSet):
+    authentication_classes = [TokenAuthentication]
+    
     queryset = Saved.objects.all()
     serializer_class = SavedSerializer
 
