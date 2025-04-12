@@ -5,6 +5,8 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from social.models import *
 from django.contrib.auth import get_user_model
+from rest_framework.exceptions import PermissionDenied
+
 
 User = get_user_model()
 
@@ -116,7 +118,7 @@ class UsernameSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = MyUser
-        fields = ['username',]
+        fields = ['username', ]
 
 class UserWithAreaSerializer(serializers.Serializer):
 
@@ -124,22 +126,21 @@ class UserWithAreaSerializer(serializers.Serializer):
     user_posts = serializers.CharField()
     favorite_posts = serializers.CharField()
     saved_posts = serializers.CharField()
+    subcribes = serializers.CharField()
+    subcribers = serializers.CharField()
 
         
 class PostSerializer(serializers.ModelSerializer):
     likes = serializers.IntegerField(read_only=True)
     user = UsernameSerializer(read_only=True)
-    comments = CommentSerializer(many=True)
-    # replies = serializers.SerializerMethodField()
+    comments = CommentSerializer(many=True, required=False)
 
     class Meta:
         model = Post
         exclude = ('saved', )
 
-    # def get_replies(self, obj):
-    #     comments = obj.comments.all()
-    #     replies = Comment.objects.filter(parent__in=comments)
-    #     return CommentSerializer(replies, many=True).data
+    
+
 
     
 class MyUserSerializer(serializers.ModelSerializer):
@@ -154,5 +155,7 @@ class MyUserSerializer(serializers.ModelSerializer):
         return UserWithAreaSerializer({
             "user_posts": [],
             "favorite_posts": [],
-            "saved_posts": []
+            "saved_posts": [],
+            "subcribes": [],
+            "subcribers": []
         }).data

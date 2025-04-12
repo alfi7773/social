@@ -22,14 +22,6 @@ class MyUser(AbstractBaseUser, PermissionsMixin, TimeAbstract):
         verbose_name = "пользователь"
         verbose_name_plural = "пользователи"
 
-    # user = models.OneToOneField(
-    #     settings.AUTH_USER_MODEL,
-    #     on_delete=models.CASCADE,
-    #     related_name="profile",
-    #     verbose_name="Пользователь",
-    #     null=True, blank=True
-    # )
-
     avatar = ResizedImageField('аватарка', size=[500, 500], crop=['middle', 'center'],
                                upload_to='avatars/', force_format='WEBP', quality=90,
                                null=True, blank=True)
