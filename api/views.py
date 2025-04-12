@@ -12,12 +12,13 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import AllowAny
+from rest_framework.exceptions import PermissionDenied
 
 
 # Create your views here.
 from rest_framework import viewsets
 from social.models import Post, Comment, Saved
-from .serializers import MyUserSerializer, PostSerializer, CommentSerializer, RegisterSerializer, SavedSerializer
+from .serializers import MyUserIdSerializer, MyUserSerializer, PostSerializer, CommentSerializer, RegisterSerializer, SavedSerializer
 from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.response import Response
@@ -29,7 +30,7 @@ from .serializers import LoginSerializer, ReadUserSerializer, ImageUserSerialize
 class AllUser(viewsets.ModelViewSet):
     
     queryset = MyUser.objects.all()
-    serializer_class = MyUserSerializer
+    serializer_class = MyUserIdSerializer
 
 class LoginApiView(APIView):
     
@@ -56,6 +57,17 @@ class LoginApiView(APIView):
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+
+
+
+    # permission_classes = [IsAuthenticated]
+    # authentication_classes = [TokenAuthentication]
+
+    def perform_create(self, serializer):
+        if self.request.user.is_authenticated:
+            serializer.save(user=self.request.user)
+        else:
+            raise PermissionDenied("Authentication credentials were not provided.")
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()

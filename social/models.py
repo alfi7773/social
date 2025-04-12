@@ -22,14 +22,6 @@ class MyUser(AbstractBaseUser, PermissionsMixin, TimeAbstract):
         verbose_name = "пользователь"
         verbose_name_plural = "пользователи"
 
-    # user = models.OneToOneField(
-    #     settings.AUTH_USER_MODEL,
-    #     on_delete=models.CASCADE,
-    #     related_name="profile",
-    #     verbose_name="Пользователь",
-    #     null=True, blank=True
-    # )
-
     avatar = ResizedImageField('аватарка', size=[500, 500], crop=['middle', 'center'],
                                upload_to='avatars/', force_format='WEBP', quality=90,
                                null=True, blank=True)
@@ -132,6 +124,7 @@ class Post(TimeAbstract):
         verbose_name = 'пост'
         
     file = models.FileField(upload_to='posts/', blank=True, null=True)
+    title = models.CharField(verbose_name='заголоыок поста', max_length=200, blank=True, null=True)
     description = models.TextField(verbose_name='описание поста', blank=True, null=True)
     user = models.ForeignKey('social.MyUser', on_delete=models.PROTECT,related_name='post')
     likes = models.PositiveIntegerField(verbose_name='лайки', default=0, blank=True, null=True)

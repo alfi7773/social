@@ -5,6 +5,8 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from social.models import *
 from django.contrib.auth import get_user_model
+from rest_framework.exceptions import PermissionDenied
+
 
 User = get_user_model()
 
@@ -117,7 +119,7 @@ class UsernameSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = MyUser
-        fields = ['username',]
+        fields = ['username', ]
 
 class UserWithAreaSerializer(serializers.Serializer):
 
@@ -125,14 +127,17 @@ class UserWithAreaSerializer(serializers.Serializer):
     user_posts = serializers.CharField()
     favorite_posts = serializers.CharField()
     saved_posts = serializers.CharField()
+    subcribes = serializers.CharField()
+    subcribers = serializers.CharField()
 
         
 class PostSerializer(serializers.ModelSerializer):
     likes = serializers.IntegerField(read_only=True)
-    user = UsernameSerializer()
-    comments = CommentSerializer(many=True)
-    avatar = serializers.SerializerMethodField(read_only=True)
 
+    # user = UsernameSerializer()
+    avatar = serializers.SerializerMethodField(read_only=True)
+    user = UsernameSerializer(read_only=True)
+    comments = CommentSerializer(many=True, required=False)
 
     class Meta:
         model = Post
@@ -152,12 +157,24 @@ class MyUserSerializer(serializers.ModelSerializer):
         model = MyUser
         fields = ['avatar','username', 'email', 'first_name', 'last_name', 'password', 'mass']
 
+
+class MyUserIdSerializer(serializers.ModelSerializer):
+
+    mass = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = MyUser
+        fields = ['id','avatar','username', 'email', 'first_name', 'last_name', 'password', 'mass']
+
+
     def get_mass(self, obj):
         return UserWithAreaSerializer({
             "user_posts": [],
             "favorite_posts": [],
             "saved_posts": [],
-            "subcribes": [],
-            "subcribe": [],
+            "subcribers": [],
+            "subcriber": [],
         }).data 
         
+
+
