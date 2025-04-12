@@ -8,9 +8,9 @@ from .models import MyUser, MyUserImage
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    # list_display = ['title']
+    list_display = ['title']
     readonly_fields = ['likes', 'saved']
-    # list_display_links = ('title',)
+    list_display_links = ('title',)
 
 class MyUserAdmin(admin.ModelAdmin):
     list_display = ( 'email', 'avatar_display')
