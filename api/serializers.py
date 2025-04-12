@@ -56,6 +56,7 @@ class LoginSerializer(serializers.Serializer):
     
 
 
+
 class ImageUserSerializer(serializers.ModelSerializer):
     
     class Meta:
@@ -128,18 +129,19 @@ class UserWithAreaSerializer(serializers.Serializer):
         
 class PostSerializer(serializers.ModelSerializer):
     likes = serializers.IntegerField(read_only=True)
-    user = UsernameSerializer(read_only=True)
+    user = UsernameSerializer()
     comments = CommentSerializer(many=True)
-    # replies = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField(read_only=True)
+
 
     class Meta:
         model = Post
         exclude = ('saved', )
+        
+    def get_avatar(self, obj):
+        return obj.user.avatar.url if obj.user.avatar else None
 
-    # def get_replies(self, obj):
-    #     comments = obj.comments.all()
-    #     replies = Comment.objects.filter(parent__in=comments)
-    #     return CommentSerializer(replies, many=True).data
+
 
     
 class MyUserSerializer(serializers.ModelSerializer):
@@ -154,5 +156,8 @@ class MyUserSerializer(serializers.ModelSerializer):
         return UserWithAreaSerializer({
             "user_posts": [],
             "favorite_posts": [],
-            "saved_posts": []
-        }).data
+            "saved_posts": [],
+            "subcribes": [],
+            "subcribe": [],
+        }).data 
+        
