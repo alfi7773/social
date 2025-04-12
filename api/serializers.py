@@ -31,15 +31,15 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
 class RegisterSerializer(serializers.ModelSerializer):
-    # password = serializers.CharField(write_only=True)
-    # username = serializers.CharField(required=False)  
+    
+    avatar = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = MyUser
         fields = ['avatar','username', 'email', 'first_name', 'last_name', 'password'] 
 
     def create(self, validated_data):
-        user = MyUser.objects.create_user(
+        user = MyUser.objects.create_user (
             avatar=validated_data['avatar'],
             username=validated_data['username'],
             first_name=validated_data['first_name'],
@@ -47,7 +47,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             password=validated_data['password'],
         )
-        print(user)
+        # print(user)
         return ReadUserSerializer(user).data
     
 class LoginSerializer(serializers.Serializer):
