@@ -119,7 +119,7 @@ class UsernameSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = MyUser
-        fields = ['username', ]
+        fields = ['username', 'id']
 
 class UserWithAreaSerializer(serializers.Serializer):
 
@@ -127,8 +127,8 @@ class UserWithAreaSerializer(serializers.Serializer):
     user_posts = serializers.CharField()
     favorite_posts = serializers.CharField()
     saved_posts = serializers.CharField()
-    subcribes = serializers.CharField()
-    subcribers = serializers.CharField()
+    subscribes = serializers.CharField()
+    subscribers = serializers.CharField()
 
         
 class PostSerializer(serializers.ModelSerializer):
@@ -144,7 +144,10 @@ class PostSerializer(serializers.ModelSerializer):
         exclude = ('saved', )
         
     def get_avatar(self, obj):
-        return obj.user.avatar.url if obj.user.avatar else None
+        request = self.context.get("request")
+        if obj.user.avatar and request:
+            return request.build_absolute_uri(obj.user.avatar.url)
+        return None
 
 
 
@@ -172,8 +175,8 @@ class MyUserIdSerializer(serializers.ModelSerializer):
             "user_posts": [],
             "favorite_posts": [],
             "saved_posts": [],
-            "subcribers": [],
-            "subcriber": [],
+            "subscribes": [],
+            "subscribers": [],
         }).data 
         
 
