@@ -13,7 +13,12 @@ from rest_framework.authentication import SessionAuthentication, TokenAuthentica
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import AllowAny
 from rest_framework.exceptions import PermissionDenied
+<<<<<<< HEAD
 from rest_framework.generics import ListAPIView
+=======
+from rest_framework.decorators import action
+from rest_framework.response import Response
+>>>>>>> 9b6831353eae6b3510a16d4177f2c1ad0ef35003
 
 
 # Create your views here.
@@ -48,7 +53,8 @@ class LoginApiView(APIView):
 
             data = {
                 **read_serializer.data,
-                'token': token.key
+                'token': token.key,
+                'user': read_serializer.data
             }
 
             return Response(data)
@@ -61,14 +67,21 @@ class PostViewSet(viewsets.ModelViewSet):
 
 
 
-    # permission_classes = [IsAuthenticated]
-    # authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    authentication_classes = [TokenAuthentication]
 
     def perform_create(self, serializer):
         if self.request.user.is_authenticated:
             serializer.save(user=self.request.user)
         else:
             raise PermissionDenied("Authentication credentials were not provided.")
+        
+
+    @action(detail=False, methods=['get'], url_path='user/(?P<user_id>[^/.]+)')
+    def posts_by_user(self, request, user_id=None):
+        posts = self.queryset.filter(user__id=user_id)
+        serializer = self.get_serializer(posts, many=True)
+        return Response(serializer.data)
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
@@ -128,6 +141,12 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
+<<<<<<< HEAD
+=======
+        user_data = ReadUserSerializer(user).data
+
+        # token, created = Token.objects.get_or_create(user=user)
+>>>>>>> 9b6831353eae6b3510a16d4177f2c1ad0ef35003
         print(user)
         return Response (
             {"message": "Пользователь создан",  

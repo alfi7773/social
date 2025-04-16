@@ -155,6 +155,17 @@ class UsernameSerializer(serializers.ModelSerializer):
         model = MyUser
         fields = ['username', 'id']
 
+<<<<<<< HEAD
+=======
+class UserWithAreaSerializer(serializers.Serializer):
+
+
+    user_posts = serializers.CharField()
+    favorite_posts = serializers.CharField()
+    saved_posts = serializers.CharField()
+    subscribes = serializers.CharField()
+    subscribers = serializers.CharField()
+>>>>>>> 9b6831353eae6b3510a16d4177f2c1ad0ef35003
 
         
 class PostSerializer(serializers.ModelSerializer):
@@ -170,7 +181,10 @@ class PostSerializer(serializers.ModelSerializer):
         exclude = ('saved', )
         
     def get_avatar(self, obj):
-        return obj.user.avatar.url if obj.user.avatar else None
+        request = self.context.get("request")
+        if obj.user.avatar and request:
+            return request.build_absolute_uri(obj.user.avatar.url)
+        return None
 
 
 
@@ -198,8 +212,13 @@ class MyUserIdSerializer(serializers.ModelSerializer):
             "user_posts": [],
             "favorite_posts": [],
             "saved_posts": [],
+<<<<<<< HEAD
             "subcribers": [],
             "subcribes": [],
+=======
+            "subscribes": [],
+            "subscribers": [],
+>>>>>>> 9b6831353eae6b3510a16d4177f2c1ad0ef35003
         }).data 
         
         
