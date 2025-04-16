@@ -56,6 +56,15 @@ class MyUser(AbstractBaseUser, PermissionsMixin, TimeAbstract):
             return self.artist_image.image.url
         return None
 
+
+    @property
+    def subscribers_count(self):
+        return self.subscribers.count()
+
+    @property
+    def subscriptions_count(self):
+        return self.subscriptions.count()
+
     
 class MyUserImage(TimeAbstract):
     class Meta:
@@ -105,7 +114,7 @@ class LikeItem(TimeAbstract):
 
 
 class Saved(TimeAbstract):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='saved')
     post = models.ManyToManyField('social.Post', through='SavedItem', related_name='saved_posts')
     
 class SavedItem(TimeAbstract):
@@ -132,8 +141,17 @@ class Post(TimeAbstract):
     tags = models.CharField(max_length=900, blank=True, null=True)
     
     def __str__(self):
-        return self.description
+        return self.title
        
+       
+class Subscription(models.Model):
+    subscriber = models.ForeignKey('MyUser', on_delete=models.CASCADE, related_name='subscriptions')
+    author = models.ForeignKey('MyUser', on_delete=models.CASCADE, related_name='subscribers')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('subscriber', 'author')  
+
 
 # Create your models here.
  

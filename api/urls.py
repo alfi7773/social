@@ -17,6 +17,8 @@ urlpatterns = [
     path('register/', views.RegisterView.as_view(), name='register'),
     path('login/', views.LoginApiView.as_view(), name='login'),
     path('likes/', views.LikePostView.as_view(), name='like_post'),
+    path('subscribe/<int:user_id>/', views.SubscribeView.as_view()),
+    path('subscriptions/', views.MySubscriptionsView.as_view(), name='subscriptions'),
     # path('users/', views.AllUser.as_view()),
     path('', include(router.urls)),  
 ]

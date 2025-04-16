@@ -1,10 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.db.models import F
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from api import models
-from social.models import MyUser, MyUserImage, Post, LikeItem
+from social.models import MyUser, MyUserImage, Post, LikeItem, Subscription
 from django.contrib.auth.models import User
 from rest_framework.generics import CreateAPIView
 from rest_framework import generics
@@ -13,6 +13,7 @@ from rest_framework.authentication import SessionAuthentication, TokenAuthentica
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import AllowAny
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.generics import ListAPIView
 
 
 # Create your views here.
@@ -92,6 +93,23 @@ class LikePostView(APIView):
         post.likes += 1
         post.save()
         return Response({"status": "liked"})
+    
+
+class SubscribersPostView(APIView):
+    
+    def post(self, request, *args, **kwargs):
+        user = request.data.get('user')
+        post_id = request.data.get('post')
+        
+        try:
+            post = Post.objects.get(id=post_id)
+        except Post.DoesNotExist:
+            return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        post.likes += 1
+        post.save()
+        return Response({"status": "liked"})
+    
 
 
 class SavedViewSet(viewsets.ModelViewSet):
@@ -110,12 +128,45 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
-        # token, created = Token.objects.get_or_create(user=user)
         print(user)
         return Response (
             {"message": "Пользователь создан",  
-            # "token": token.key,
             "user": user,
             },
             status=status.HTTP_201_CREATED
         )
+        
+        
+class SubscribeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, user_id):
+        author = get_object_or_404(MyUser, id=user_id)
+        if request.user == author:
+            return Response({"detail": "Нельзя подписаться на себя."}, status=400)
+
+        subscription, created = Subscription.objects.get_or_create(
+            subscriber=request.user,
+            author=author
+        )
+        if not created:
+            return Response({"detail": "Уже подписан."}, status=400)
+        return Response({"detail": "Подписка оформлена."}, status=201)
+
+    def delete(self, request, user_id):
+        author = get_object_or_404(MyUser, id=user_id)
+        subscription = Subscription.objects.filter(subscriber=request.user, author=author)
+        if subscription.exists():
+            subscription.delete()
+            return Response({"detail": "Подписка удалена."}, status=204)
+        return Response({"detail": "Вы не были подписаны."}, status=400)
+
+
+
+
+class MySubscriptionsView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = MyUserIdSerializer  
+
+    def get_queryset(self):
+        return MyUser.objects.filter(subscribers__subscriber=self.request.user)
