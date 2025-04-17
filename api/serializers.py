@@ -9,27 +9,83 @@ from rest_framework.exceptions import PermissionDenied
 
 
 User = get_user_model()
+class CommentSerializer(serializers.ModelSerializer):
+    replies = serializers.SerializerMethodField()
 
+    class Meta:
+        model = Comment
+        fields = '__all__'
+
+    def get_replies(self, obj):
+        replies = obj.replies.all() 
+        return CommentSerializer(replies, many=True).data
+class UsernameSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = MyUser
+        fields = ['username', 'id']
+
+class PostSerializer(serializers.ModelSerializer):
+    likes = serializers.IntegerField(read_only=True)
+
+    # user = UsernameSerializer()
+    avatar = serializers.SerializerMethodField(read_only=True)
+    user = UsernameSerializer(read_only=True)
+    comments = CommentSerializer(many=True, required=False)
+
+    class Meta:
+        model = Post
+        exclude = ('saved', )
+        
+    def get_avatar(self, obj):
+        request = self.context.get("request")
+        if obj.user.avatar and request:
+            return request.build_absolute_uri(obj.user.avatar.url)
+        return None
+    
+    def create(self, validated_data):
+        user = self.context['request'].user
+        return Post.objects.create(author=user, **validated_data)
+
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = ['subscriber', 'author', 'created_at']
 
 
 class UserWithAreaSerializer(serializers.Serializer):
-
-
-    user_posts = serializers.CharField()
-    favorite_posts = serializers.CharField()
+    user_posts = PostSerializer(source='post', many=True, read_only=True)
+    favorite_posts = serializers.SerializerMethodField()
     saved_posts = serializers.SerializerMethodField()
-    subcribes = serializers.CharField()
-    subcribers = serializers.CharField()
-    
+    subscribes = serializers.SerializerMethodField()
+    subscribers = serializers.SerializerMethodField()
     
     def get_saved_posts(self, obj):
-        saved = getattr(obj, 'saved', None)
+        saved = obj.saved.first()
         if not saved:
             return []
         posts = [item.post for item in saved.saved_items.all()]
         return PostSerializer(posts, many=True).data
 
+    def get_subscribes(self, obj):
+        return list(obj.subscriptions.values_list('author__id', flat=True))
 
+    def get_subscribers(self, obj):
+        return list(obj.subscribers.values_list('subscriber__id', flat=True))
+
+    def get_favorite_posts(self, obj):
+        likes = Like.objects.filter(user=obj)
+        post_ids = LikeItem.objects.filter(like__in=likes).values_list('post', flat=True)
+        posts = Post.objects.filter(id__in=post_ids)
+        return PostSerializer(posts, many=True).data
+
+    def get_subscribers_count(self, obj):
+        return obj.subscribers.count()
+
+    def get_subscribes_count(self, obj):
+        return obj.subscriptions.count()
 
 class ReadUserSerializer(serializers.ModelSerializer):
 
@@ -59,13 +115,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
     def get_mass(self, obj):
-        return UserWithAreaSerializer({
-            "user_posts": [],
-            "favorite_posts": [],
-            "saved_posts": [],
-            "subcribers": [],
-            "subcribes": [],
-        }).data
+        return UserWithAreaSerializer(obj).data
 
     def create(self, validated_data):
         user = MyUser.objects.create_user (
@@ -97,16 +147,6 @@ class ImageUserSerializer(serializers.ModelSerializer):
 
 
         
-class CommentSerializer(serializers.ModelSerializer):
-    replies = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Comment
-        fields = '__all__'
-
-    def get_replies(self, obj):
-        replies = obj.replies.all() 
-        return CommentSerializer(replies, many=True).data
 
         
 class LikeSerializer(serializers.ModelSerializer):
@@ -149,42 +189,6 @@ class SavedSerializer(serializers.ModelSerializer):
         return saved_instance
 
     
-class UsernameSerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model = MyUser
-        fields = ['username', 'id']
-
-<<<<<<< HEAD
-=======
-class UserWithAreaSerializer(serializers.Serializer):
-
-
-    user_posts = serializers.CharField()
-    favorite_posts = serializers.CharField()
-    saved_posts = serializers.CharField()
-    subscribes = serializers.CharField()
-    subscribers = serializers.CharField()
->>>>>>> 9b6831353eae6b3510a16d4177f2c1ad0ef35003
-
-        
-class PostSerializer(serializers.ModelSerializer):
-    likes = serializers.IntegerField(read_only=True)
-
-    # user = UsernameSerializer()
-    avatar = serializers.SerializerMethodField(read_only=True)
-    user = UsernameSerializer(read_only=True)
-    comments = CommentSerializer(many=True, required=False)
-
-    class Meta:
-        model = Post
-        exclude = ('saved', )
-        
-    def get_avatar(self, obj):
-        request = self.context.get("request")
-        if obj.user.avatar and request:
-            return request.build_absolute_uri(obj.user.avatar.url)
-        return None
 
 
 
@@ -208,21 +212,8 @@ class MyUserIdSerializer(serializers.ModelSerializer):
 
 
     def get_mass(self, obj):
-        return UserWithAreaSerializer({
-            "user_posts": [],
-            "favorite_posts": [],
-            "saved_posts": [],
-<<<<<<< HEAD
-            "subcribers": [],
-            "subcribes": [],
-=======
-            "subscribes": [],
-            "subscribers": [],
->>>>>>> 9b6831353eae6b3510a16d4177f2c1ad0ef35003
-        }).data 
-        
-        
-class SubscriptionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Subscription
-        fields = ['subscriber', 'author', 'created_at']
+        return UserWithAreaSerializer(obj).data
+
+
+
+
