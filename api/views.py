@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from api import models
-from social.models import MyUser, MyUserImage, Post, LikeItem, Subscription
+from social.models import Like, MyUser, MyUserImage, Post, LikeItem, Subscription
 from django.contrib.auth.models import User
 from rest_framework.generics import CreateAPIView
 from rest_framework import generics
@@ -21,7 +21,7 @@ from rest_framework.response import Response
 # Create your views here.
 from rest_framework import viewsets
 from social.models import Post, Comment, Saved
-from .serializers import MyUserIdSerializer, MyUserSerializer, PostSerializer, CommentSerializer, RegisterSerializer, SavedSerializer
+from .serializers import LikeSerializer, MyUserIdSerializer, MyUserSerializer, PostSerializer, CommentSerializer, RegisterSerializer, SavedSerializer, SubscriptionSerializer
 from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.response import Response
@@ -46,7 +46,7 @@ class LoginApiView(APIView):
 
         if user:
             token, created = Token.objects.get_or_create(user=user)
-            read_serializer = ReadUserSerializer(user, context={'request': request})
+            read_serializer = MyUserIdSerializer(user, context={'request': request})
 
             data = {
                 **read_serializer.data,
@@ -56,7 +56,7 @@ class LoginApiView(APIView):
 
             return Response(data)
 
-        return Response({'detail': 'Пользователь не найден или не правильный пароль.'}, read_serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'detail': 'Пользователь не найден или не правильный пароль.'}, status=status.HTTP_400_BAD_REQUEST)
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
@@ -90,19 +90,38 @@ class UserImage(viewsets.ModelViewSet):
 
 
 class LikePostView(APIView):
-    
     def post(self, request, *args, **kwargs):
-        user = request.data.get('user')
+        user = request.user
         post_id = request.data.get('post')
-        
+
         try:
             post = Post.objects.get(id=post_id)
         except Post.DoesNotExist:
             return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
-        
+
+        like, like_created = Like.objects.get_or_create(user=user)
+        like_item, item_created = LikeItem.objects.get_or_create(like=like, post=post)
+
+        if not item_created:
+            return Response({"status": "already liked"})
+
         post.likes += 1
         post.save()
+
         return Response({"status": "liked"})
+
+class PostsByUserView(viewsets.ModelViewSet):
+    
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
+    
+    @action(detail=False, methods=['get'], url_path='user/(?P<user_id>[^/.]+)')
+    def posts_by_user(self, request, user_id=None):
+        posts = self.queryset.filter(user__id=user_id)
+        serializer = self.get_serializer(posts, many=True)
+        return Response(serializer.data)
+
+
     
 
 class SubscribersPostView(APIView):
@@ -125,6 +144,12 @@ class SubscribersPostView(APIView):
 class SavedViewSet(viewsets.ModelViewSet):
     queryset = Saved.objects.all()
     serializer_class = SavedSerializer
+
+    @action(detail=False, methods=['get'], url_path='user/(?P<user_id>[^/.]+)')
+    def posts_by_user(self, request, user_id=None):
+        posts = self.queryset.filter(user__id=user_id)
+        serializer = self.get_serializer(posts, many=True)
+        return Response(serializer.data)
 
 
     
@@ -170,7 +195,17 @@ class SubscribeView(APIView):
             return Response({"detail": "Подписка удалена."}, status=204)
         return Response({"detail": "Вы не были подписаны."}, status=400)
 
-
+class SubscribersView(viewsets.ModelViewSet):
+    
+    queryset = Subscription.objects.all()
+    serializer_class = SubscriptionSerializer
+    
+    @action(detail=False, methods=['get'], url_path='user/(?P<user_id>[^/.]+)')
+    def subscribers_by_user(self, request, user_id=None):
+        subscriptions = self.queryset.filter(author__id=user_id)
+        serializer = self.get_serializer(subscriptions, many=True)
+        return Response(serializer.data)
+    
 
 
 class MySubscriptionsView(ListAPIView):

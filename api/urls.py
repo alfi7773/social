@@ -12,6 +12,8 @@ router.register('comments', views.CommentViewSet)
 router.register('saved', views.SavedViewSet)
 router.register('image-user', views.UserImage)
 router.register('users', views.AllUser)
+router.register('likes', views.PostsByUserView)
+router.register('subscribers', views.SubscribersView)
 
 urlpatterns = [
     path('register/', views.RegisterView.as_view(), name='register'),

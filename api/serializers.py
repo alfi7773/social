@@ -45,7 +45,8 @@ class PostSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         user = self.context['request'].user
-        return Post.objects.create(author=user, **validated_data)
+        validated_data.pop('user', None)
+        return Post.objects.create(user=user, **validated_data)
 
 
 
@@ -94,6 +95,10 @@ class ReadUserSerializer(serializers.ModelSerializer):
         fields = ['id','avatar', 'username', 'email', 'first_name', 'last_name']
 
 
+    def get_mass(self, obj):
+        return UserWithAreaSerializer(obj).data
+    
+    
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -213,7 +218,6 @@ class MyUserIdSerializer(serializers.ModelSerializer):
 
     def get_mass(self, obj):
         return UserWithAreaSerializer(obj).data
-
 
 
 
