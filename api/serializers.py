@@ -122,6 +122,8 @@ class RegisterSerializer(serializers.ModelSerializer):
     def get_mass(self, obj):
         return UserWithAreaSerializer(obj).data
 
+    
+
     def create(self, validated_data):
         user = MyUser.objects.create_user (
             avatar=validated_data['avatar'],
@@ -194,6 +196,12 @@ class SavedSerializer(serializers.ModelSerializer):
         return saved_instance
 
     
+class PostOnlySerializer(serializers.Serializer):
+    post = serializers.IntegerField()
+
+class UserLikesSerializer(serializers.Serializer):
+    user = serializers.IntegerField()
+    saved_items = PostOnlySerializer(many=True)
 
 
 
@@ -218,7 +226,3 @@ class MyUserIdSerializer(serializers.ModelSerializer):
 
     def get_mass(self, obj):
         return UserWithAreaSerializer(obj).data
-
-
-
-
