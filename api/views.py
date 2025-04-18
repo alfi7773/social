@@ -106,17 +106,25 @@ class LikePostView(APIView):
 
         post.likes += 1
         post.save()
+<<<<<<< HEAD
         
 
         return Response({"status": "liked"})
 
 class PostsByUserView(viewsets.ViewSet):
+=======
+
+        return Response({"status": "liked"})
+
+class PostsByUserView(viewsets.ModelViewSet):
+>>>>>>> 7a4b675a5842e3f420331ff14be6139740818586
     
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
     
     @action(detail=False, methods=['get'], url_path='user/(?P<user_id>[^/.]+)')
     def posts_by_user(self, request, user_id=None):
+<<<<<<< HEAD
         like_items = LikeItem.objects.filter(like__user__id=user_id)
 
         data = defaultdict(list)
@@ -130,6 +138,13 @@ class PostsByUserView(viewsets.ViewSet):
         serializer = UserLikesSerializer(result, many=True)
         return Response(serializer.data)
 
+=======
+        posts = self.queryset.filter(user__id=user_id)
+        serializer = self.get_serializer(posts, many=True)
+        return Response(serializer.data)
+
+
+>>>>>>> 7a4b675a5842e3f420331ff14be6139740818586
     
 
 class SubscribersPostView(APIView):
@@ -154,9 +169,15 @@ class SavedViewSet(viewsets.ModelViewSet):
     serializer_class = SavedSerializer
 
     @action(detail=False, methods=['get'], url_path='user/(?P<user_id>[^/.]+)')
+<<<<<<< HEAD
     def saved_by_user(self, request, user_id=None):
         saved_instances = self.queryset.filter(user__id=user_id)
         serializer = self.get_serializer(saved_instances, many=True)
+=======
+    def posts_by_user(self, request, user_id=None):
+        posts = self.queryset.filter(user__id=user_id)
+        serializer = self.get_serializer(posts, many=True)
+>>>>>>> 7a4b675a5842e3f420331ff14be6139740818586
         return Response(serializer.data)
 
 

@@ -12,7 +12,11 @@ router.register('comments', views.CommentViewSet)
 router.register('saved', views.SavedViewSet)
 router.register('image-user', views.UserImage)
 router.register('users', views.AllUser)
+<<<<<<< HEAD
 router.register('like', views.PostsByUserView, basename='user-likes')
+=======
+router.register('likes', views.PostsByUserView)
+>>>>>>> 7a4b675a5842e3f420331ff14be6139740818586
 router.register('subscribers', views.SubscribersView)
 
 urlpatterns = [

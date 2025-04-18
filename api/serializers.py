@@ -232,3 +232,7 @@ class MyUserIdSerializer(serializers.ModelSerializer):
 
     def get_mass(self, obj):
         return UserWithAreaSerializer(obj).data
+
+
+
+
