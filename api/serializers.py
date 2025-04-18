@@ -35,7 +35,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        exclude = ('saved', )
+        fields = '__all__'
         
     def get_avatar(self, obj):
         request = self.context.get("request")
@@ -152,33 +152,37 @@ class ImageUserSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-
+class LikeItemSerializer(serializers.ModelSerializer):
+    post = PostSerializer()
+    class Meta:
+        model = LikeItem
+        fields = ['post',]
         
 
         
 class LikeSerializer(serializers.ModelSerializer):
     
+    like_items = LikeItemSerializer(many=True)
     user = serializers.SerializerMethodField()
     
     class Meta:
         model = Like
-        fields = ['user', 'post']
+        fields = ['user', 'post', 'like_items']
         
         
     def get_user(self, obj):
         return obj.user.id
         
 class SavedItemSerializer(serializers.ModelSerializer):
-    post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
-    
+    post = PostSerializer()  
+
     class Meta:
         model = SavedItem
         fields = ['post']
 
-
 class SavedSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    saved_items = SavedItemSerializer(many=True)
+    saved_items = SavedItemSerializer(many=True) 
 
     class Meta:
         model = Saved
@@ -201,7 +205,9 @@ class PostOnlySerializer(serializers.Serializer):
 
 class UserLikesSerializer(serializers.Serializer):
     user = serializers.IntegerField()
-    saved_items = PostOnlySerializer(many=True)
+    like_items = serializers.ListField(
+        child=serializers.DictField()
+    )
 
 
 

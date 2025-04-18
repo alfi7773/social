@@ -1,6 +1,5 @@
 from django.shortcuts import get_object_or_404, render
 from django.db.models import F
-from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from api import models
@@ -25,11 +24,9 @@ from social.models import Post, Comment, Saved
 from .serializers import LikeSerializer, MyUserIdSerializer, MyUserSerializer, PostSerializer, CommentSerializer, RegisterSerializer, SavedSerializer, SubscriptionSerializer
 from django.contrib.auth import authenticate
 from rest_framework import status
-from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
-from .serializers import LoginSerializer, ReadUserSerializer, ImageUserSerializer
-from .serializers import UserLikesSerializer
+from .serializers import LoginSerializer, ReadUserSerializer, ImageUserSerializer, UserLikesSerializer
 
 
 class AllUser(viewsets.ModelViewSet):
@@ -124,9 +121,12 @@ class PostsByUserView(viewsets.ViewSet):
 
         data = defaultdict(list)
         for item in like_items:
-            data[item.like.user.id].append({'post': item.post.id})
+            post_data = PostSerializer(item.post).data
+            user_id = item.like.user.id
+            data[user_id].append(PostSerializer(item.post).data)
 
-        result = [{'user': user_id, 'saved_items': items} for user_id, items in data.items()]
+
+        result = [{'user': uid, 'like_items': items} for uid, items in data.items()]
         serializer = UserLikesSerializer(result, many=True)
         return Response(serializer.data)
 
@@ -154,7 +154,7 @@ class SavedViewSet(viewsets.ModelViewSet):
     serializer_class = SavedSerializer
 
     @action(detail=False, methods=['get'], url_path='user/(?P<user_id>[^/.]+)')
-    def posts_by_user(self, request, user_id=None):
+    def saved_by_user(self, request, user_id=None):
         posts = self.queryset.filter(user__id=user_id)
         serializer = self.get_serializer(posts, many=True)
         return Response(serializer.data)
