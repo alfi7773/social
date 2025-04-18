@@ -155,8 +155,8 @@ class SavedViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='user/(?P<user_id>[^/.]+)')
     def saved_by_user(self, request, user_id=None):
-        posts = self.queryset.filter(user__id=user_id)
-        serializer = self.get_serializer(posts, many=True)
+        saved_instances = self.queryset.filter(user__id=user_id)
+        serializer = self.get_serializer(saved_instances, many=True)
         return Response(serializer.data)
 
 
