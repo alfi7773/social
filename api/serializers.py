@@ -26,12 +26,20 @@ class UsernameSerializer(serializers.ModelSerializer):
     class Meta:
         model = MyUser
         fields = ['username', 'id', 'avatar']
+        
+class PostImageSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = PostImage
+        fields = '__all__'
+
 
 class PostSerializer(serializers.ModelSerializer):
     
     likes = serializers.IntegerField(read_only=True)
     user = UsernameSerializer(read_only=True)
-    comments = CommentSerializer(many=True, required=False)
+    # comments = CommentSerializer(many=True, required=False)
+    media = PostImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Post
@@ -47,13 +55,19 @@ class PostSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         validated_data.pop('user', None)
         return Post.objects.create(user=user, **validated_data)
+    
+    def get_comments_count(self, obj):
+        return obj.comments.count()
 
 
 
 class PostTagSerializer(serializers.ModelSerializer):
     
-    model = PostTag.objects.all()
-    fields = '__all__'
+    class Meta:
+        model = PostTag
+        fields = '__all__'
+
+
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):

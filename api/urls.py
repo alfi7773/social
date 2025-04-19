@@ -6,28 +6,32 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 router = DefaultRouter()
+
+# Ресурсы с постами
 router.register('posts', views.PostViewSet)
-router.register('comments', views.CommentViewSet)
-# router.register('likes', views.LikePostView)
-router.register('saved', views.SavedViewSet, basename='save')
-router.register('post-save', views.SavedPostViewSet)
-router.register('tags', views.PostTagViewSet)
-router.register('image-user', views.UserImage)
+router.register('post-comments', views.CommentViewSet)  
+# router.register('post-likes', views.LikePostView)  
+# router.register('post-likes', views.LikePostView, basename='likepost')
+router.register('post-saves', views.SavedViewSet, basename='save') 
+router.register('post-images', views.PostImageViewSet)
+router.register('post-tags', views.PostTagViewSet)
 
 router.register('users', views.AllUser)
-router.register('like', views.PostsByUserView, basename='user-likes')
-router.register('subscribers', views.SubscribersView)
+router.register('user-images', views.UserImage)
+router.register('user-likes', views.PostsByUserView, basename='user-likes')
+router.register('user-subscriptions', views.SubscribersView)
+
 
 urlpatterns = [
-    path('register/', views.RegisterView.as_view(), name='register'),
-    path('login/', views.LoginApiView.as_view(), name='login'),
-    path('likes/', views.LikePostView.as_view(), name='like_post'),
-    path('subscribe/<int:user_id>/', views.SubscribeView.as_view()),
-    path('subscriptions/', views.MySubscriptionsView.as_view(), name='subscriptions'),
-    # path('users/', views.AllUser.as_view()),
+    path('register/', views.RegisterView.as_view(), name='register-user'), 
+    path('login/', views.LoginApiView.as_view(), name='login-user'),
+    path('post-like/', views.LikePostView.as_view(), name='like-post'), 
+    path('post-subscribe/<int:user_id>/', views.SubscribeView.as_view(), name='subscribe-user'),  
+    path('user-subscriptions/', views.MySubscriptionsView.as_view(), name='user-subscriptions'), 
     path('', include(router.urls)),  
 ]
 
 urlpatterns += url_doc
+
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

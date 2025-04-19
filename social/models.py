@@ -155,20 +155,13 @@ class PostImage(TimeAbstract):
         verbose_name_plural = 'изображении постов'
         # ordering = ('-created_at',)
 
-    post = models.ForeignKey('social.Post', models.CASCADE, related_name='images', verbose_name='image')
+    post = models.ForeignKey('social.Post', models.CASCADE, related_name='media', verbose_name='post')
     media = ResizedImageField('изображение', upload_to='post_images/', quality=90, force_format='WEBP')
 
     def __str__(self):
         return f'{self.post.title}'
        
        
-class Subscription(models.Model):
-    subscriber = models.ForeignKey('MyUser', on_delete=models.CASCADE, related_name='subscriptions')
-    author = models.ForeignKey('MyUser', on_delete=models.CASCADE, related_name='subscribers')
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ('subscriber', 'author')  
 
 
 
@@ -184,5 +177,12 @@ class PostTag(TimeAbstract):
     def __str__(self):
         return f'{self.name}'
 
+class Subscription(models.Model):
+    subscriber = models.ForeignKey('MyUser', on_delete=models.CASCADE, related_name='subscriptions')
+    author = models.ForeignKey('MyUser', on_delete=models.CASCADE, related_name='subscribers')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('subscriber', 'author')  
 # Create your models here.
  
