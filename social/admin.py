@@ -6,11 +6,24 @@ from django.utils.safestring import mark_safe
 from django.utils.html import format_html
 from .models import MyUser, MyUserImage
 
+
+class PostmageStackedInline(admin.TabularInline):
+
+    model = PostImage
+    extra = 1
+
+
+class PostTagStackedInline(admin.TabularInline):
+
+    model = PostTag
+    extra = 1
+
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     list_display = ['title']
     readonly_fields = ['likes', 'saved']
     list_display_links = ('title',)
+    inlines = [PostmageStackedInline, PostTagStackedInline]
 
 class MyUserAdmin(admin.ModelAdmin):
     list_display = ( 'email', 'avatar_display')

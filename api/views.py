@@ -3,7 +3,7 @@ from django.db.models import F
 from rest_framework import status
 from rest_framework.views import APIView
 from api import models
-from social.models import Like, MyUser, MyUserImage, Post, LikeItem, Subscription
+from social.models import Like, MyUser, MyUserImage, Post, LikeItem, PostTag, Subscription
 from django.contrib.auth.models import User
 from rest_framework.generics import CreateAPIView
 from rest_framework import generics
@@ -21,7 +21,7 @@ from collections import defaultdict
 # Create your views here.
 from rest_framework import viewsets
 from social.models import Post, Comment, Saved
-from .serializers import LikeSerializer, MyUserIdSerializer, MyUserSerializer, PostSerializer, CommentSerializer, RegisterSerializer, SavedSerializer, SubscriptionSerializer
+from .serializers import LikeSerializer, MyUserIdSerializer, MyUserSerializer, PostSerializer, CommentSerializer, PostTagSerializer, RegisterSerializer, SavedSerializer, SubscriptionSerializer
 from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.views import APIView
@@ -106,25 +106,18 @@ class LikePostView(APIView):
 
         post.likes += 1
         post.save()
-<<<<<<< HEAD
         
 
         return Response({"status": "liked"})
 
-class PostsByUserView(viewsets.ViewSet):
-=======
-
-        return Response({"status": "liked"})
 
 class PostsByUserView(viewsets.ModelViewSet):
->>>>>>> 7a4b675a5842e3f420331ff14be6139740818586
     
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
     
     @action(detail=False, methods=['get'], url_path='user/(?P<user_id>[^/.]+)')
     def posts_by_user(self, request, user_id=None):
-<<<<<<< HEAD
         like_items = LikeItem.objects.filter(like__user__id=user_id)
 
         data = defaultdict(list)
@@ -138,17 +131,14 @@ class PostsByUserView(viewsets.ModelViewSet):
         serializer = UserLikesSerializer(result, many=True)
         return Response(serializer.data)
 
-=======
         posts = self.queryset.filter(user__id=user_id)
         serializer = self.get_serializer(posts, many=True)
         return Response(serializer.data)
 
 
->>>>>>> 7a4b675a5842e3f420331ff14be6139740818586
     
 
 class SubscribersPostView(APIView):
-    
     def post(self, request, *args, **kwargs):
         user = request.data.get('user')
         post_id = request.data.get('post')
@@ -162,6 +152,10 @@ class SubscribersPostView(APIView):
         post.save()
         return Response({"status": "liked"})
     
+class SavedPostViewSet(viewsets.ModelViewSet):
+    queryset = Saved.objects.all()
+    serializer_class = SavedSerializer
+
 
 
 class SavedViewSet(viewsets.ModelViewSet):
@@ -169,19 +163,17 @@ class SavedViewSet(viewsets.ModelViewSet):
     serializer_class = SavedSerializer
 
     @action(detail=False, methods=['get'], url_path='user/(?P<user_id>[^/.]+)')
-<<<<<<< HEAD
     def saved_by_user(self, request, user_id=None):
         saved_instances = self.queryset.filter(user__id=user_id)
         serializer = self.get_serializer(saved_instances, many=True)
-=======
+        return Response(serializer.data) 
+        
     def posts_by_user(self, request, user_id=None):
         posts = self.queryset.filter(user__id=user_id)
         serializer = self.get_serializer(posts, many=True)
->>>>>>> 7a4b675a5842e3f420331ff14be6139740818586
         return Response(serializer.data)
 
 
-    
 class RegisterView(generics.CreateAPIView):
     queryset = MyUser.objects.all()
     permission_classes = [AllowAny]
@@ -243,3 +235,9 @@ class MySubscriptionsView(ListAPIView):
 
     def get_queryset(self):
         return MyUser.objects.filter(subscribers__subscriber=self.request.user)
+    
+    
+class PostTagViewSet(viewsets.ModelViewSet):
+    
+    queryset = PostTag.objects.all()
+    serializer_class = PostTagSerializer

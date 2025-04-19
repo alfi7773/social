@@ -132,16 +132,34 @@ class Post(TimeAbstract):
         verbose_name_plural = 'посты'
         verbose_name = 'пост'
         
-    file = models.FileField(upload_to='posts/', blank=True, null=True)
+    # file = models.FileField(upload_to='posts/', blank=True, null=True)
     title = models.CharField(verbose_name='заголоыок поста', max_length=200, blank=True, null=True)
     description = models.TextField(verbose_name='описание поста', blank=True, null=True)
     user = models.ForeignKey('social.MyUser', on_delete=models.PROTECT,related_name='post')
     likes = models.PositiveIntegerField(verbose_name='лайки', default=0, blank=True, null=True)
     saved = models.PositiveIntegerField(verbose_name='сохраненные', default=0, blank=True, null=True)
-    tags = models.CharField(max_length=900, blank=True, null=True)
     
     def __str__(self):
         return self.title
+       
+       
+    @property
+    def image(self):
+        if self.images.first():
+            return self.images.first().image
+        return None
+       
+class PostImage(TimeAbstract):
+    class Meta:
+        verbose_name = 'изображение поста'
+        verbose_name_plural = 'изображении постов'
+        # ordering = ('-created_at',)
+
+    post = models.ForeignKey('social.Post', models.CASCADE, related_name='images', verbose_name='image')
+    media = ResizedImageField('изображение', upload_to='post_images/', quality=90, force_format='WEBP')
+
+    def __str__(self):
+        return f'{self.post.title}'
        
        
 class Subscription(models.Model):
@@ -152,6 +170,19 @@ class Subscription(models.Model):
     class Meta:
         unique_together = ('subscriber', 'author')  
 
+
+
+class PostTag(TimeAbstract):
+    class Meta:
+        verbose_name = 'tag post'
+        verbose_name_plural = 'tags posts'
+        # ordering = ('-created_at',)
+
+    name = models.CharField('название', max_length=50)
+    post = models.ForeignKey('social.Post', models.CASCADE, related_name='post_tags', verbose_name='tag')
+
+    def __str__(self):
+        return f'{self.name}'
 
 # Create your models here.
  

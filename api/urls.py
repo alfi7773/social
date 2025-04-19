@@ -9,14 +9,13 @@ router = DefaultRouter()
 router.register('posts', views.PostViewSet)
 router.register('comments', views.CommentViewSet)
 # router.register('likes', views.LikePostView)
-router.register('saved', views.SavedViewSet)
+router.register('saved', views.SavedViewSet, basename='save')
+router.register('post-save', views.SavedPostViewSet)
+router.register('tags', views.PostTagViewSet)
 router.register('image-user', views.UserImage)
+
 router.register('users', views.AllUser)
-<<<<<<< HEAD
 router.register('like', views.PostsByUserView, basename='user-likes')
-=======
-router.register('likes', views.PostsByUserView)
->>>>>>> 7a4b675a5842e3f420331ff14be6139740818586
 router.register('subscribers', views.SubscribersView)
 
 urlpatterns = [

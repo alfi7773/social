@@ -6,6 +6,8 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from social.models import *
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.relations import PrimaryKeyRelatedField
+
 
 
 User = get_user_model()
@@ -23,13 +25,11 @@ class UsernameSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = MyUser
-        fields = ['username', 'id']
+        fields = ['username', 'id', 'avatar']
 
 class PostSerializer(serializers.ModelSerializer):
+    
     likes = serializers.IntegerField(read_only=True)
-
-    # user = UsernameSerializer()
-    avatar = serializers.SerializerMethodField(read_only=True)
     user = UsernameSerializer(read_only=True)
     comments = CommentSerializer(many=True, required=False)
 
@@ -48,6 +48,12 @@ class PostSerializer(serializers.ModelSerializer):
         validated_data.pop('user', None)
         return Post.objects.create(user=user, **validated_data)
 
+
+
+class PostTagSerializer(serializers.ModelSerializer):
+    
+    model = PostTag.objects.all()
+    fields = '__all__'
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
@@ -173,13 +179,19 @@ class LikeSerializer(serializers.ModelSerializer):
     def get_user(self, obj):
         return obj.user.id
         
-class SavedItemSerializer(serializers.ModelSerializer):
-    post = PostSerializer()  
+class SavedItemSerializer2(serializers.ModelSerializer):
+    post = PrimaryKeyRelatedField(queryset=Post.objects.all())
 
     class Meta:
         model = SavedItem
         fields = ['post']
+class SavedItemSerializer(serializers.ModelSerializer):
+    post = PostSerializer()
 
+
+    class Meta:
+        model = SavedItem
+        fields = ['post']
 class SavedSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     saved_items = SavedItemSerializer(many=True) 
