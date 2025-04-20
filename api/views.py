@@ -26,7 +26,7 @@ from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
-from .serializers import LoginSerializer, ReadUserSerializer, ImageUserSerializer, UserLikesSerializer, PostImageSerializer
+from .serializers import LoginSerializer, ReadUserSerializer, ImageUserSerializer, UserLikesSerializer, PostImageSerializer, SavedSerializer2
 
 class AllUser(viewsets.ModelViewSet):
     queryset = MyUser.objects.all()
@@ -58,8 +58,8 @@ class LoginApiView(APIView):
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
-    authentication_classes = [TokenAuthentication]
+    # permission_classes = [IsAuthenticatedOrReadOnly]
+    # authentication_classes = [TokenAuthentication]
 
     def perform_create(self, serializer):
         if self.request.user.is_authenticated:
@@ -155,7 +155,7 @@ class PostsByUserView(viewsets.ModelViewSet):
 
 class SavedPostViewSet(viewsets.ModelViewSet):
     queryset = Saved.objects.all()
-    serializer_class = SavedSerializer
+    serializer_class = SavedSerializer2 
 
 
 class SavedViewSet(viewsets.ModelViewSet):
