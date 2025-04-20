@@ -187,12 +187,22 @@ class LikeSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Like
-        fields = ['user', 'post', 'like_items']
+        fields = ['user', 'like_items']
         
         
     def get_user(self, obj):
         return obj.user.id
-        
+    
+class UserLikeSerializer(serializers.ModelSerializer):
+    like_items = serializers.SerializerMethodField()
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = Like
+        fields = ['user', 'like_items']
+
+    def get_like_items(self, obj):
+        return [{'post': item.post.id} for item in obj.like_items.all()]    
 class SavedItemSerializer2(serializers.ModelSerializer):
     post = PrimaryKeyRelatedField(queryset=Post.objects.all())
 
