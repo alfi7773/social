@@ -18,6 +18,7 @@ router.register('post-tags', views.PostTagViewSet)
 
 router.register('users', views.AllUser)
 router.register('user-images', views.UserImage)
+router.register('user-saves', views.SavedViewSet)
 router.register('user-likes', views.PostsByUserView, basename='user-likes')
 router.register('user-subscriptions', views.SubscribersView)
 
