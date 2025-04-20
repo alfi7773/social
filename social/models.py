@@ -150,17 +150,15 @@ class Post(TimeAbstract):
         return None
        
 class PostImage(TimeAbstract):
-    class Meta:
-        verbose_name = 'изображение поста'
-        verbose_name_plural = 'изображении постов'
-        # ordering = ('-created_at',)
+    MEDIA_TYPES = [('image', 'Фото'), ('video', 'Видео')]
 
     post = models.ForeignKey('social.Post', models.CASCADE, related_name='media', verbose_name='post')
     media = ResizedImageField('изображение', upload_to='post_images/', quality=90, force_format='WEBP')
+    media_type = models.CharField('Тип медиа', max_length=5, choices=MEDIA_TYPES, default='image')
 
     def __str__(self):
-        return f'{self.post.title}'
-       
+        return self.post.title
+
        
 
 
