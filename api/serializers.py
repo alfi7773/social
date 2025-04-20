@@ -199,6 +199,7 @@ class SavedItemSerializer2(serializers.ModelSerializer):
     class Meta:
         model = SavedItem
         fields = ['post']
+        
 class SavedItemSerializer(serializers.ModelSerializer):
     post = PostSerializer()
 
@@ -206,7 +207,28 @@ class SavedItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = SavedItem
         fields = ['post']
+        
+        
 class SavedSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    saved_items = SavedItemSerializer2(many=True) 
+
+    class Meta:
+        model = Saved
+        fields = ['user', 'saved_items']
+
+    def create(self, validated_data):
+        saved_items_data = validated_data.pop('saved_items')
+        user = validated_data['user']
+
+        saved_instance, created = Saved.objects.get_or_create(user=user)
+
+        for item_data in saved_items_data:
+            SavedItem.objects.create(saved=saved_instance, **item_data)
+
+        return saved_instance
+
+class SavedSerializer2(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     saved_items = SavedItemSerializer(many=True) 
 
@@ -224,7 +246,6 @@ class SavedSerializer(serializers.ModelSerializer):
             SavedItem.objects.create(saved=saved_instance, **item_data)
 
         return saved_instance
-
     
 class PostOnlySerializer(serializers.Serializer):
     post = serializers.IntegerField()
