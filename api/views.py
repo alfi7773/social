@@ -26,7 +26,7 @@ from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
-from .serializers import LoginSerializer, ReadUserSerializer, ImageUserSerializer, UserLikesSerializer, PostImageSerializer, SavedSerializer2
+from .serializers import LoginSerializer, ReadUserSerializer, ImageUserSerializer, UserLikesSerializer, PostImageSerializer, SavedSerializer2, UserLikeSerializer
 
 class AllUser(viewsets.ModelViewSet):
     queryset = MyUser.objects.all()
@@ -136,7 +136,7 @@ class LikePostView(APIView):
 
 class PostsByUserView(viewsets.ModelViewSet):
     queryset = Like.objects.all()
-    serializer_class = LikeSerializer
+    serializer_class = UserLikeSerializer
 
     @action(detail=False, methods=['get'], url_path='user/(?P<user_id>[^/.]+)')
     def posts_by_user(self, request, user_id=None):
@@ -144,18 +144,18 @@ class PostsByUserView(viewsets.ModelViewSet):
 
         data = defaultdict(list)
         for item in like_items:
-            post_data = PostSerializer(item.post).data
-            user_id = item.like.user.id
-            data[user_id].append(PostSerializer(item.post).data)
+            uid = item.like.user.id
+            pid = item.post.id
+            data[uid].append({'post': pid})
 
         result = [{'user': uid, 'like_items': items} for uid, items in data.items()]
-        serializer = UserLikesSerializer(result, many=True)
-        return Response(serializer.data)
+        return Response(result)
+
 
 
 class SavedPostViewSet(viewsets.ModelViewSet):
     queryset = Saved.objects.all()
-    serializer_class = SavedSerializer2 
+    serializer_class = SavedSerializer
 
 
 class SavedViewSet(viewsets.ModelViewSet):
