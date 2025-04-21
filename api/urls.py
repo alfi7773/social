@@ -12,7 +12,7 @@ router.register('posts', views.PostViewSet)
 router.register('post-comments', views.CommentViewSet)  
 # router.register('post-likes', views.LikePostView)  
 # router.register('post-likes', views.LikePostView, basename='likepost')
-router.register('post-saves', views.SavedViewSet, basename='save') 
+# router.register('post-saves', views.SavedItemViewSet, basename='save') 
 router.register('post-images', views.PostImageViewSet)
 router.register('post-tags', views.PostTagViewSet)
 
@@ -27,6 +27,7 @@ urlpatterns = [
     path('register/', views.RegisterView.as_view(), name='register-user'), 
     path('login/', views.LoginApiView.as_view(), name='login-user'),
     path('post-like/', views.LikePostView.as_view(), name='like-post'), 
+    path('post-saves/', views.SavedPostView.as_view(), name='saved-post'), 
     path('post-subscribe/<int:user_id>/', views.SubscribeView.as_view(), name='subscribe-user'),  
     path('user-subscriptions/', views.MySubscriptionsView.as_view(), name='user-subscriptions'), 
     path('', include(router.urls)),  
