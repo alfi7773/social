@@ -33,6 +33,11 @@ class PostImageSerializer(serializers.ModelSerializer):
         model = PostImage
         fields = '__all__'
 
+class PostIdserializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Post
+        fields = ('id',)
 
 class PostSerializer(serializers.ModelSerializer):
     
@@ -193,6 +198,28 @@ class LikeSerializer(serializers.ModelSerializer):
     def get_user(self, obj):
         return obj.user.id
     
+    
+class SaveItemSerializer(serializers.ModelSerializer):
+    post = PostSerializer()
+    class Meta:
+        model = SavedItem
+        fields = ['post',]
+        
+
+        
+class SaveSerializer(serializers.ModelSerializer):
+    
+    like_items = LikeItemSerializer(many=True)
+    user = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Saved
+        fields = ['user', 'saved_items']
+        
+        
+    def get_user(self, obj):
+        return obj.user.id    
+    
 class UserLikeSerializer(serializers.ModelSerializer):
     like_items = serializers.SerializerMethodField()
     user = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -203,44 +230,72 @@ class UserLikeSerializer(serializers.ModelSerializer):
 
     def get_like_items(self, obj):
         return [{'post': item.post.id} for item in obj.like_items.all()]    
-class SavedItemSerializer2(serializers.ModelSerializer):
-    post = PrimaryKeyRelatedField(queryset=Post.objects.all())
+
+
+    
+class UserSaveSerializer(serializers.ModelSerializer):
+    saved_items = serializers.SerializerMethodField()
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
-        model = SavedItem
-        fields = ['post']
-        
-class SavedItemSerializer(serializers.ModelSerializer):
-    post = PostSerializer()
-
-
-    class Meta:
-        model = SavedItem
-        fields = ['post']
-        
-        
-class SavedSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    saved_items = SavedItemSerializer2(many=True) 
-
-    class Meta:
-        model = Saved
+        model = Like
         fields = ['user', 'saved_items']
 
-    def create(self, validated_data):
-        saved_items_data = validated_data.pop('saved_items')
-        user = validated_data['user']
+    def get_like_items(self, obj):
+        return [{'post': item.post.id} for item in obj.saved_items.all()]    
 
-        saved_instance, created = Saved.objects.get_or_create(user=user)
 
-        for item_data in saved_items_data:
-            SavedItem.objects.create(saved=saved_instance, **item_data)
 
-        return saved_instance
+# class SavedItemSerializer2(serializers.ModelSerializer):
+#     post = PrimaryKeyRelatedField(queryset=Post.objects.all())
+
+#     class Meta:
+#         model = SavedItem
+#         fields = ['post']
+        
+# class SavedItemSerializer(serializers.ModelSerializer):
+#     user_id = serializers.IntegerField(source='saved.user.id', read_only=True)
+#     post_id = serializers.IntegerField(write_only=True)
+#     saved_id = serializers.IntegerField(write_only=True)
+
+#     class Meta:
+#         model = SavedItem
+#         fields = ['saved_id', 'user_id', 'post_id']
+
+    # def create(self, validated_data):
+    #     saved_id = validated_data.pop('saved_id')
+    #     post_id = validated_data.pop('post_id')
+    #     return SavedItem.objects.create(
+    #         saved=Saved.objects.get(id=saved_id),
+    #         post_id=post_id,
+    #         **validated_data
+    #     )
+
+class SavedItemSerializerUser(serializers.ModelSerializer):
+    post_id = serializers.PrimaryKeyRelatedField(
+        queryset=Post.objects.all(), source='post'
+    )
+
+    class Meta:
+        model = SavedItem
+        fields = ['post_id']
+
+        
+        
+# class SavedSerializer(serializers.ModelSerializer):
+#     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+#     post = PostIdserializer()
+
+#     class Meta:
+#         model = Saved
+#         fields = ['user', 'post']
+
+
+    
 
 class SavedSerializer2(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    saved_items = SavedItemSerializer(many=True) 
+    saved_items = SavedItemSerializerUser(many=True) 
 
     class Meta:
         model = Saved
@@ -289,7 +344,3 @@ class MyUserIdSerializer(serializers.ModelSerializer):
 
     def get_mass(self, obj):
         return UserWithAreaSerializer(obj).data
-
-
-
-
