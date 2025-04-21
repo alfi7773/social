@@ -3,7 +3,7 @@ from django.db.models import F
 from rest_framework import status
 from rest_framework.views import APIView
 from api import models
-from social.models import Like, MyUser, MyUserImage, Post, LikeItem, PostImage, PostTag, Subscription
+from social.models import Like, MyUser, MyUserImage, Post, LikeItem, PostImage, PostTag, Subscription, SavedItem
 from django.contrib.auth.models import User
 from rest_framework.generics import CreateAPIView
 from rest_framework import generics
@@ -21,12 +21,12 @@ from collections import defaultdict
 # Create your views here.
 from rest_framework import viewsets
 from social.models import Post, Comment, Saved
-from .serializers import LikeSerializer, MyUserIdSerializer, MyUserSerializer, PostSerializer, CommentSerializer, PostTagSerializer, RegisterSerializer, SavedSerializer, SubscriptionSerializer
+from .serializers import LikeSerializer, MyUserIdSerializer, MyUserSerializer, PostSerializer, CommentSerializer, PostTagSerializer, RegisterSerializer, SubscriptionSerializer, UserSaveSerializer
 from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
-from .serializers import LoginSerializer, ReadUserSerializer, ImageUserSerializer, UserLikesSerializer, PostImageSerializer, SavedSerializer2, UserLikeSerializer
+from .serializers import LoginSerializer, ReadUserSerializer, ImageUserSerializer, UserLikesSerializer, PostImageSerializer, SavedSerializer2, UserLikeSerializer, UserSaveSerializer, SaveSerializer
 
 class AllUser(viewsets.ModelViewSet):
     queryset = MyUser.objects.all()
@@ -82,6 +82,78 @@ class CommentViewSet(viewsets.ModelViewSet):
 class UserImage(viewsets.ModelViewSet):
     queryset = MyUserImage.objects.all()
     serializer_class = ImageUserSerializer
+
+
+
+class SavedPostView(APIView):
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        post_id = request.data.get('post')
+
+        try:
+            post = Post.objects.get(id=post_id)
+        except Post.DoesNotExist:
+            return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        saved, saved_created = Saved.objects.get_or_create(user=user)
+        saved_item, item_created = SavedItem.objects.get_or_create(saved=saved, post=post)
+
+        if not item_created:
+            return Response({"status": "already saved"})
+
+        post.saved += 1
+        post.save()
+
+        return Response({"status": "saved"})
+    
+    def delete(self, request, *args, **kwargs):
+        user = request.user
+        post_id = request.data.get('post')  
+
+        if not post_id:
+            return Response({"error": "Post ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            post = Post.objects.get(id=post_id)
+        except Post.DoesNotExist:
+            return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            saved = Saved.objects.get(user=user)  
+        except Saved.DoesNotExist:
+            return Response({"status": "saved not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            saved_item = LikeItem.objects.get(saved=saved, post=post) 
+        except LikeItem.DoesNotExist:
+            return Response({"status": "saved not found on this post"}, status=status.HTTP_404_NOT_FOUND)
+
+        saved_item.delete()
+
+        post.saved -= 1
+        post.save()
+
+        return Response({"status": "saved removed"})
+
+class PostsByUserSavedView(viewsets.ModelViewSet):
+    queryset = Saved.objects.all()
+    serializer_class = UserSaveSerializer
+
+    @action(detail=False, methods=['get'], url_path='user/(?P<user_id>[^/.]+)')
+    def posts_by_user(self, request, user_id=None):
+        saved_items = SavedItem.objects.filter(saved__user__id=user_id)
+
+        data = defaultdict(list)
+        for item in saved_items:
+            uid = item.saved.user.id
+            pid = item.post.id
+            data[uid].append({'post': pid})
+
+        result = [{'user': uid, 'saved_items': items} for uid, items in data.items()]
+        return Response(result)
+
+
+
 
 
 class LikePostView(APIView):
@@ -153,14 +225,15 @@ class PostsByUserView(viewsets.ModelViewSet):
 
 
 
-class SavedPostViewSet(viewsets.ModelViewSet):
-    queryset = Saved.objects.all()
-    serializer_class = SavedSerializer
+# class SavedItemViewSet(viewsets.ModelViewSet):
+#     queryset = SavedItem.objects.select_related('saved__user', 'post')
+#     serializer_class = SavedItemSerializer
+
 
 
 class SavedViewSet(viewsets.ModelViewSet):
     queryset = Saved.objects.all()
-    serializer_class = SavedSerializer
+    serializer_class = SavedSerializer2
 
     @action(detail=False, methods=['get'], url_path='user/(?P<user_id>[^/.]+)')
     def saved_by_user(self, request, user_id=None):
